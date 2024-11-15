@@ -13,6 +13,7 @@ public class MinesweeperGame {
     public static final String LAND_MINE_SIGN = "☼";
     public static final String CLOSED_CELL_SIGN = "□";
     public static final String OPENED_CELL_SIGN = "■";
+    public static final Scanner SCANNER = new Scanner(System.in);
     private static final String[][] BOARD = new String[BOARD_ROW_SIZE][BOARD_COL_SIZE];
     private static final Integer[][] NEARBY_LAND_MINE_COUNTS = new Integer[BOARD_ROW_SIZE][BOARD_COL_SIZE];
     private static final boolean[][] LAND_MINES = new boolean[BOARD_ROW_SIZE][BOARD_COL_SIZE];
@@ -22,11 +23,9 @@ public class MinesweeperGame {
     public static void main(String[] args) {
         showGameStartComments();
 
-        Scanner scanner = new Scanner(System.in);
-
         // 게임 초기화
         initializeGame();
-        
+
         while (true) {
             showBoard();
 
@@ -39,8 +38,8 @@ public class MinesweeperGame {
                 break;
             }
 
-            String cellInput = getCellInputFromUser(scanner);
-            String userActionInput = getUserActionInputFromUser(scanner);
+            String cellInput = getCellInputFromUser();
+            String userActionInput = getUserActionInputFromUser();
 
             actOnCell(cellInput, userActionInput);
         }
@@ -104,14 +103,14 @@ public class MinesweeperGame {
 		return convertColFrom(cellInputCol);
     }
 
-    private static String getUserActionInputFromUser(Scanner scanner) {
+    private static String getUserActionInputFromUser() {
         System.out.println("선택한 셀에 대한 행위를 선택하세요. (1: 오픈, 2: 깃발 꽂기)");
-		return scanner.nextLine();
+		return SCANNER.nextLine();
     }
 
-    private static String getCellInputFromUser(Scanner scanner) {
+    private static String getCellInputFromUser() {
         System.out.println("선택할 좌표를 입력하세요. (예: a1)");
-		return scanner.nextLine();
+		return SCANNER.nextLine();
     }
 
     private static boolean doesUserLoseTheGame() {
