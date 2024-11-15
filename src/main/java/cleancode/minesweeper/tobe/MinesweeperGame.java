@@ -1,5 +1,6 @@
 package cleancode.minesweeper.tobe;
 
+import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -138,15 +139,9 @@ public class MinesweeperGame {
      * @return
      */
     private static boolean isAllCellOpened() {
-        boolean isAllOpened = true; // 전체 보드가 다 열려있는지 나타내는 플래그 값
-        for (int row = 0; row < BOARD_ROW_SIZE; row++) {
-            for (int col = 0; col < BOARD_COL_SIZE; col++) {
-                if (BOARD[row][col].equals(CLOSED_CELL_SIGN)) {
-                    isAllOpened = false;
-                }
-            }
-        }
-        return isAllOpened;
+        return Arrays.stream(BOARD) // Stream<String[]>
+            .flatMap(Arrays::stream) // Stream<String>
+            .noneMatch(cell -> cell.equals(CLOSED_CELL_SIGN));
     }
 
     private static int convertRowFrom(char cellInputRow) {
