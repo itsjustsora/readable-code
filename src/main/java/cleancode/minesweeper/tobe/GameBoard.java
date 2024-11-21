@@ -3,14 +3,19 @@ package cleancode.minesweeper.tobe;
 import java.util.Arrays;
 import java.util.Random;
 
+import cleancode.minesweeper.tobe.gamelevel.GameLevel;
+
 public class GameBoard {
 
-	public static final int LAND_MINE_COUNT = 10;
-
 	private final Cell[][] board;
+	private final int landMineCount;
 
-	public GameBoard(int rowSize, int colSize) {
+	public GameBoard(GameLevel gameLevel) {
+		int rowSize = gameLevel.getRowSize();
+		int colSize = gameLevel.getColSize();
 		board = new Cell[rowSize][colSize];
+
+		landMineCount = gameLevel.getLandMineCount();
 	}
 
 	public void flag(int rowIndex, int colIndex) {
@@ -82,7 +87,7 @@ public class GameBoard {
 		}
 
 		// 랜덤 자리에 지뢰를 10개 설정하여 해당 위치를 true로 변경
-		for (int i = 0; i < LAND_MINE_COUNT; i++) {
+		for (int i = 0; i < landMineCount; i++) {
 			int landMineCol = new Random().nextInt(colSize);
 			int landMineRow = new Random().nextInt(rowSize);
 			Cell landMineCell = findCell(landMineRow, landMineCol);
