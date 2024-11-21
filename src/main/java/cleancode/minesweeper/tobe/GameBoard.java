@@ -3,6 +3,10 @@ package cleancode.minesweeper.tobe;
 import java.util.Arrays;
 import java.util.Random;
 
+import cleancode.minesweeper.tobe.cell.Cell;
+import cleancode.minesweeper.tobe.cell.EmptyCell;
+import cleancode.minesweeper.tobe.cell.LandMineCell;
+import cleancode.minesweeper.tobe.cell.NumberCell;
 import cleancode.minesweeper.tobe.gamelevel.GameLevel;
 
 public class GameBoard {
@@ -82,7 +86,7 @@ public class GameBoard {
 		for (int row = 0; row < rowSize; row++) {
 			for (int col = 0; col < colSize; col++) {
 				// 행 8, 열 10
-				board[row][col] = Cell.create();
+				board[row][col] = new EmptyCell();
 			}
 		}
 
@@ -90,8 +94,7 @@ public class GameBoard {
 		for (int i = 0; i < landMineCount; i++) {
 			int landMineCol = new Random().nextInt(colSize);
 			int landMineRow = new Random().nextInt(rowSize);
-			Cell landMineCell = findCell(landMineRow, landMineCol);
-			landMineCell.turnOnLandMine();
+			board[landMineRow][landMineCol] = new LandMineCell();
 		}
 
 		for (int row = 0; row < rowSize; row++) {
@@ -103,8 +106,11 @@ public class GameBoard {
 
 				// 지뢰가 아닌 경우
 				int count = countNearbyLandMines(row, col);
-				Cell cell = findCell(row, col);
-				cell.updateNearbyLandMineCount(count);
+				if (count == 0) {
+					continue;
+				}
+				NumberCell numberCell = new NumberCell(count);
+				board[row][col] = numberCell;
 			}
 		}
 	}
