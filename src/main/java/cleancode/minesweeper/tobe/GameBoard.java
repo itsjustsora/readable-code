@@ -1,16 +1,15 @@
 package cleancode.minesweeper.tobe;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
-import java.util.stream.Stream;
 
 import cleancode.minesweeper.tobe.cell.Cell;
+import cleancode.minesweeper.tobe.cell.Cells;
 import cleancode.minesweeper.tobe.cell.EmptyCell;
 import cleancode.minesweeper.tobe.cell.LandMineCell;
 import cleancode.minesweeper.tobe.cell.NumberCell;
 import cleancode.minesweeper.tobe.gamelevel.GameLevel;
 import cleancode.minesweeper.tobe.position.CellPosition;
+import cleancode.minesweeper.tobe.position.CellPositions;
 import cleancode.minesweeper.tobe.position.RelativePosition;
 
 public class GameBoard {
@@ -77,9 +76,8 @@ public class GameBoard {
 	 * @return
 	 */
 	public boolean isAllCellChecked() {
-		return Arrays.stream(board) // Stream<String[]>
-			.flatMap(Arrays::stream) // Stream<String>
-			.allMatch(Cell::isChecked);
+		Cells cells = Cells.from(board);
+		return cells.isAllChecked();
 	}
 
 	public boolean isInvalidCellPosition(CellPosition cellPosition) {
@@ -91,40 +89,42 @@ public class GameBoard {
 	}
 
 	public void initializeGame() {
-		int rowSize = board.length;
-		int colSize = board[0].length;
+		CellPositions cellPositions = CellPositions.from(board);
 
-		for (int row = 0; row < rowSize; row++) {
-			for (int col = 0; col < colSize; col++) {
-				// 행 8, 열 10
-				board[row][col] = new EmptyCell();
-			}
-		}
+		initializeEmptyCells(cellPositions);
 
 		// 랜덤 자리에 지뢰를 10개 설정하여 해당 위치를 true로 변경
-		for (int i = 0; i < landMineCount; i++) {
-			int landMineCol = new Random().nextInt(colSize);
-			int landMineRow = new Random().nextInt(rowSize);
-			board[landMineRow][landMineCol] = new LandMineCell();
-		}
+		List<CellPosition> landMinePositions = cellPositions.extractRandomPositions(landMineCount);
+		initializeLandMineCells(landMinePositions);
 
-		for (int row = 0; row < rowSize; row++) {
-			for (int col = 0; col < colSize; col++) {
-				// 지뢰가 있는 경우
-				CellPosition cellPosition = CellPosition.of(row, col);
-				if (isLandMineCellAt(cellPosition)) {
-					continue;
-				}
+		List<CellPosition> numberPositionCandidates = cellPositions.subtract(landMinePositions);
+		initializeNumberCells(numberPositionCandidates);
+	}
 
-				// 지뢰가 아닌 경우
-				int count = countNearbyLandMines(cellPosition);
-				if (count == 0) {
-					continue;
-				}
-				NumberCell numberCell = new NumberCell(count);
-				board[row][col] = numberCell;
+	private void initializeNumberCells(List<CellPosition> numberPositionCandidates) {
+		for (CellPosition candidatePosition : numberPositionCandidates) {
+			int count = countNearbyLandMines(candidatePosition);
+			if (count != 0) {
+				updateCellAt(candidatePosition, new NumberCell(count));
 			}
 		}
+	}
+
+	private void initializeEmptyCells(CellPositions cellPositions) {
+		List<CellPosition> allPositions = cellPositions.getPositions();
+		for (CellPosition position : allPositions) {
+			updateCellAt(position, new EmptyCell());
+		}
+	}
+
+	private void initializeLandMineCells(List<CellPosition> landMinePositions) {
+		for (CellPosition position : landMinePositions) {
+			updateCellAt(position, new LandMineCell());
+		}
+	}
+
+	private void updateCellAt(CellPosition position, Cell cell) {
+		board[position.getRowIndex()][position.getColIndex()] = cell;
 	}
 
 	public int getRowSize() {
