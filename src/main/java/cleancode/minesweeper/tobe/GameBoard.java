@@ -18,20 +18,39 @@ public class GameBoard {
 	private final Cell[][] board;
 	private final int landMineCount;
 
+	private GameStatus gameStatus;
+
 	public GameBoard(GameLevel gameLevel) {
 		int rowSize = gameLevel.getRowSize();
 		int colSize = gameLevel.getColSize();
 		board = new Cell[rowSize][colSize];
 
 		landMineCount = gameLevel.getLandMineCount();
+		initializeGameStatus();
+	}
+
+	/**
+	 * 셀이 모두 열려있는지 확인 후 게임 종료 값 설정
+	 */
+	private void checkIfGameIsOver() {
+		// 셀이 모두 열려있는지 확인
+		if (isAllCellChecked()) {
+			changeGameStatusToWin();
+		}
+	}
+
+	private void changeGameStatusToWin() {
+		gameStatus = GameStatus.WIN;
 	}
 
 	public void flagAt(CellPosition cellPosition) {
 		Cell cell = findCell(cellPosition);
 		cell.flag();
+
+		checkIfGameIsOver();
 	}
 
-	public void openAt(CellPosition cellPosition) {
+	public void openOneCellAt(CellPosition cellPosition) {
 		Cell cell = findCell(cellPosition);
 		cell.open();
 	}
@@ -47,7 +66,7 @@ public class GameBoard {
 			return;
 		}
 
-		openAt(cellPosition);
+		openOneCellAt(cellPosition);
 
 		// 지뢰 count를 가지고 있는 cell인지 검증
 		if (doesCellHaveLandMineCount(cellPosition)) {
@@ -95,6 +114,7 @@ public class GameBoard {
 	}
 
 	public void initializeGame() {
+		initializeGameStatus();
 		CellPositions cellPositions = CellPositions.from(board);
 
 		initializeEmptyCells(cellPositions);
@@ -105,6 +125,10 @@ public class GameBoard {
 
 		List<CellPosition> numberPositionCandidates = cellPositions.subtract(landMinePositions);
 		initializeNumberCells(numberPositionCandidates);
+	}
+
+	private void initializeGameStatus() {
+		gameStatus = GameStatus.IN_PROGRESS;
 	}
 
 	private void initializeNumberCells(List<CellPosition> numberPositionCandidates) {
@@ -167,5 +191,34 @@ public class GameBoard {
 			.filter(position -> position.isRowIndexLessThan(rowSize))
 			.filter(position -> position.isColIndexLessThan(colSize))
 			.toList();
+	}
+
+	public boolean isInProgress() {
+		return gameStatus == GameStatus.IN_PROGRESS;
+	}
+
+	public void openAt(CellPosition cellPosition) {
+		// 지뢰 cell을 선택한 경우
+		if (isLandMineCellAt(cellPosition)) {
+			openOneCellAt(cellPosition);
+			changeGameStatusToLose();
+			return;
+		}
+
+		// 일반 cell을 선택한 경우
+		openSurroundedCells(cellPosition);
+		checkIfGameIsOver();
+	}
+
+	private void changeGameStatusToLose() {
+		gameStatus = GameStatus.LOSE;
+	}
+
+	public boolean isLoseStatus() {
+		return gameStatus == GameStatus.LOSE;
+	}
+
+	public boolean isWinStatus() {
+		return gameStatus == GameStatus.WIN;
 	}
 }
