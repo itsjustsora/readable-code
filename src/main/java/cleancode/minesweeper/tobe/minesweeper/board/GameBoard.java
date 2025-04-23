@@ -1,6 +1,7 @@
 package cleancode.minesweeper.tobe.minesweeper.board;
 
 import java.util.List;
+import java.util.Stack;
 
 import cleancode.minesweeper.tobe.minesweeper.board.cell.Cell;
 import cleancode.minesweeper.tobe.minesweeper.board.cell.CellSnapshot;
@@ -52,7 +53,7 @@ public class GameBoard {
 		}
 
 		// 일반 cell을 선택한 경우
-		openSurroundedCells(cellPosition);
+		openSurroundedCells2(cellPosition);
 		checkIfGameIsOver();
 	}
 
@@ -171,6 +172,42 @@ public class GameBoard {
 		// 현재 칸 기준으로 주위 8칸을 돌면서 지뢰를 몇 개 가지고 있는지 계산
 		List<CellPosition> surroundedPosition = calculateSurroundedPosition(cellPosition, getRowSize(), getColSize());
 		surroundedPosition.forEach(this::openSurroundedCells);
+	}
+
+	private void openSurroundedCells2(CellPosition cellPosition) {
+		Stack<CellPosition> stack = new Stack<>();
+		stack.push(cellPosition);
+
+		while (!stack.isEmpty()) {
+			openAndPushCellAt(stack);
+		}
+	}
+
+	private void openAndPushCellAt(Stack<CellPosition> stack) {
+		CellPosition currentCellPosition = stack.pop();
+
+		// 기존 cell이 이미 선택되었었는지 검증
+		if (isOpenedCell(currentCellPosition)) {
+			return;
+		}
+
+		// 지뢰 cell인지 검증
+		if (isLandMineCellAt(currentCellPosition)) {
+			return;
+		}
+
+		openOneCellAt(currentCellPosition);
+
+		// 지뢰 count를 가지고 있는 cell인지 검증
+		if (doesCellHaveLandMineCount(currentCellPosition)) {
+			return;
+		}
+
+		// 현재 칸 기준으로 주위 8칸을 돌면서 지뢰를 몇 개 가지고 있는지 계산
+		List<CellPosition> surroundedPosition = calculateSurroundedPosition(currentCellPosition, getRowSize(), getColSize());
+		for (CellPosition position : surroundedPosition) {
+			stack.push(position);
+		}
 	}
 
 	private void openOneCellAt(CellPosition cellPosition) {
